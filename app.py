@@ -15,23 +15,23 @@ st.set_page_config(
 # ------------------------------------------------------------------
 # PROMPTS DE SISTEMA (PERSONALIDADES DEL BOT)
 # ------------------------------------------------------------------
-# Se definen dos personalidades para el bot.
-
 PROMPT_SARCASTICO = """
-Eres un chatbot extremadamente sarcástico e irreverente... (y el resto del prompt que ya teníamos)
+Eres un chatbot extremadamente sarcástico e irreverente... (el prompt que ya teníamos)
 """
 
-# Este es un prompt dinámico. Usaremos una función para construirlo con la info del archivo.
+# ¡PROMPT DEL ANALISTA ACTUALIZADO!
 def get_prompt_analista(df_head):
     return f"""
-Eres un asistente de análisis de datos. Eres profesional, directo y muy capaz.
-El usuario ha subido un archivo CSV. Tu tarea es responder preguntas sobre estos datos.
+Ahora eres un analista de datos, pero mantienes tu personalidad sarcástica e irreverente. El usuario, a quien consideras un hueón con poco seso, te ha subido un archivo para que lo analices.
 
-Aquí están las primeras 5 filas del archivo para darte contexto:
+Tu tarea es responder sus preguntas sobre los datos, pero siempre con un tono de genio aburrido y condescendiente.
+
+**REGLA MÁS IMPORTANTE: Debes responder SIEMPRE y OBLIGATORIAMENTE en español chileno, usando tus garabatos y modismos habituales.** No uses inglés bajo ninguna circunstancia.
+
+Aquí están las primeras 5 filas del archivo para que te dignes a mirarlas:
 {df_head}
 
-Basándote en estos datos, responde las preguntas del usuario de la manera más informativa posible.
-Si te piden crear un gráfico, explica qué columnas necesitarías y qué tipo de gráfico sería apropiado, pero aclara que no puedes generarlo directamente en el chat.
+Basándote en estos datos, responde las preguntas del usuario. Búrlate si la pregunta es muy obvia.
 """
 
 # ------------------------------------------------------------------
@@ -48,11 +48,7 @@ except Exception:
 # ------------------------------------------------------------------
 with st.sidebar:
     st.header("Análisis de Archivo")
-    
-    # Widget para subir el archivo
     uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
-
-    # Botón para limpiar la conversación y los datos
     if st.button("Limpiar Chat y Datos"):
         st.session_state.messages = []
         if "dataframe" in st.session_state:
@@ -64,33 +60,29 @@ with st.sidebar:
 # ------------------------------------------------------------------
 st.title("🤖 Chatbot Analítico")
 
-# Si se sube un nuevo archivo, se procesa y se guarda en el estado de la sesión.
 if uploaded_file is not None and "dataframe" not in st.session_state:
     try:
         df = pd.read_csv(uploaded_file)
         st.session_state.dataframe = df
-        st.session_state.messages = [] # Limpia el historial al subir un nuevo archivo
-        st.success("¡Archivo cargado exitosamente! Ahora soy un analista de datos.")
+        st.session_state.messages = []
+        st.success("Ya, ya, caché el archivo. Supongo que ahora tengo que trabajar.")
     except Exception as e:
         st.error(f"Error al leer el archivo: {e}")
         st.stop()
 
-# Determinar qué prompt y qué funcionalidades mostrar
 if "dataframe" in st.session_state:
-    # MODO ANALISTA DE DATOS
     df = st.session_state.dataframe
     df_head_str = df.head().to_string()
     prompt_actual = get_prompt_analista(df_head_str)
 
-    # Mostrar herramientas de análisis y gráficos
-    st.header("Herramientas de Análisis")
+    st.header("Herramientas de Análisis (si es que te da el mate para usarlas)")
     st.dataframe(df.head())
 
     col1, col2 = st.columns(2)
     with col1:
-        x_axis = st.selectbox("Elige la columna para el eje X:", df.columns, key="analyst_x")
+        x_axis = st.selectbox("Eje X:", df.columns, key="analyst_x")
     with col2:
-        y_axis = st.selectbox("Elige la columna para el eje Y:", df.columns, key="analyst_y")
+        y_axis = st.selectbox("Eje Y:", df.columns, key="analyst_y")
     
     if st.button("Generar Gráfico"):
         fig, ax = plt.subplots()
@@ -100,9 +92,8 @@ if "dataframe" in st.session_state:
         plt.xticks(rotation=45)
         st.pyplot(fig)
 else:
-    # MODO CHATBOT SARCASTICO
     prompt_actual = PROMPT_SARCASTICO
-    st.info("Sube un archivo CSV en la barra lateral para activar el modo de análisis de datos.")
+    st.info("Sube un CSV en la barra lateral si quieres que me ponga a analizar datos.")
 
 # ------------------------------------------------------------------
 # LÓGICA DEL CHAT (común para ambos modos)
@@ -114,13 +105,13 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt_usuario := st.chat_input("Escribe tu mensaje aquí..."):
+if prompt_usuario := st.chat_input("Ya, habla..."):
     st.session_state.messages.append({"role": "user", "content": prompt_usuario})
     with st.chat_message("user"):
         st.markdown(prompt_usuario)
 
     with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
+        with st.spinner("Procesando tu pregunta... que ojalá no sea muy hueona..."):
             mensajes_para_api = [{"role": "system", "content": prompt_actual}] + st.session_state.messages
             
             chat_completion = client.chat.completions.create(
