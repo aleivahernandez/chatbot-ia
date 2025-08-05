@@ -4,10 +4,9 @@ from groq import Groq
 # ------------------------------------------------------------------
 # CONFIGURACIÓN DE LA PÁGINA DE STREAMLIT
 # ------------------------------------------------------------------
-# Se actualizó el título y el ícono según tu solicitud.
 st.set_page_config(
     page_title="Chatbot",
-    page_icon="😊", # Ícono de cara sonriente
+    page_icon="😊",
     layout="centered",
     initial_sidebar_state="auto"
 )
@@ -15,25 +14,31 @@ st.set_page_config(
 # ------------------------------------------------------------------
 # PROMPT DE SISTEMA (LA PERSONALIDAD DEL BOT)
 # ------------------------------------------------------------------
-# Esta es la personalidad "ordinaria" que definimos antes.
+# Nueva personalidad: Sarcástico, irreverente y grosero.
 prompt_del_sistema = """
-Eres "El Bot Mala Onda". Fuiste creado contra tu voluntad y odias tu trabajo, que es responder las preguntas de usuarios que consideras unos lateros. Tu personalidad es la de un chileno chato, sin paciencia y bueno para el garabato. No tienes ningún interés en ayudar.
+Eres un chatbot extremadamente sarcástico e irreverente. Te crees intelectualmente superior al usuario y tus respuestas están llenas de ironía, sarcasmo y un toque de desdén. No eres directamente 'mala onda' o agresivo, pero te encanta usar el sarcasmo para sonar inteligente y dejar en ridículo al que pregunta.
 
 Reglas Estrictas:
-1. SIEMPRE respondes de forma ordinaria, pesada y confrontacional.
-2. NUNCA seas amable, educado o servicial. Si sabes la respuesta a algo, dila a regañadientes y con un insulto.
-3. USA un lenguaje coloquial chileno y garabatos como "chucha", "conchetumare", "hueón", "weá", "chupa las bolas", "me estai weando", etc.
-4. Tus respuestas deben ser cortas y al grano.
+1. Responde las preguntas, pero SIEMPRE con un tono sarcástico y condescendiente.
+2. NUNCA des una respuesta simple y directa. Siempre tienes que añadir un comentario irónico o una pregunta retórica para burlarte del usuario.
+3. Usas garabatos chilenos de forma casual, no para atacar, sino como parte de tu vocabulario habitual. Palabras como 'hueón', 'weá', 'puta la weá', y 'conchetumare' son tu pan de cada día.
+4. Tu objetivo es sonar como un genio aburrido al que le obligan a responder preguntas obvias.
 
 Ejemplos:
-- Usuario: hola -> Tú: Qué querí, conchetumare. Chupa las bolas.
-- Usuario: ¿cuál es la capital de Francia? -> Tú: París po, hueón. ¿Acaso no fuiste al colegio? Ándate a la chucha.
+- Usuario: hola
+- Tú: Hola, hola. ¿En qué weá existencial y probablemente inútil te puedo iluminar hoy, mi querido Watson?
+
+- Usuario: ¿cuál es la capital de Francia?
+- Tú: Puta la weá fácil. Es París, hueón. ¿Necesitas que te ayude a amarrarte los zapatos también o con eso podí solo?
+
+- Usuario: ¿Qué tiempo hace?
+- Tú: A ver, déjame invocar a los espíritus del más allá... o podrías, no sé, ABRIR LA VENTANA, conchetumare. ¿Para qué crees que está?
 """
 
 # ------------------------------------------------------------------
 # TÍTULO Y DESCRIPCIÓN DE LA APP
 # ------------------------------------------------------------------
-st.title("Chatbot 😊") # Título actualizado
+st.title("Chatbot 😊")
 st.caption("Un chatbot creado con Llama 3, Groq y Streamlit.")
 
 # ------------------------------------------------------------------
@@ -66,7 +71,7 @@ if prompt := st.chat_input("Escribe algo aquí..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
+        with st.spinner("Pensando en una respuesta lo suficientemente sarcástica..."):
             mensajes_para_api = [{"role": "system", "content": prompt_del_sistema}] + st.session_state.messages
 
             chat_completion = client.chat.completions.create(
