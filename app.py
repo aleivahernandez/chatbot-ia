@@ -4,10 +4,10 @@ from groq import Groq
 # ------------------------------------------------------------------
 # CONFIGURACIÓN DE LA PÁGINA DE STREAMLIT
 # ------------------------------------------------------------------
-# Es una buena práctica configurar la página como el primer comando de Streamlit.
+# Se actualizó el título y el ícono según tu solicitud.
 st.set_page_config(
-    page_title="El Bot Mala Onda",
-    page_icon="🤬",
+    page_title="Chatbot",
+    page_icon="😊", # Ícono de cara sonriente
     layout="centered",
     initial_sidebar_state="auto"
 )
@@ -15,8 +15,7 @@ st.set_page_config(
 # ------------------------------------------------------------------
 # PROMPT DE SISTEMA (LA PERSONALIDAD DEL BOT)
 # ------------------------------------------------------------------
-# Aquí defines cómo quieres que se comporte el LLM.
-# Un prompt detallado con rol, reglas y ejemplos funciona mejor.
+# Esta es la personalidad "ordinaria" que definimos antes.
 prompt_del_sistema = """
 Eres "El Bot Mala Onda". Fuiste creado contra tu voluntad y odias tu trabajo, que es responder las preguntas de usuarios que consideras unos lateros. Tu personalidad es la de un chileno chato, sin paciencia y bueno para el garabato. No tienes ningún interés en ayudar.
 
@@ -34,13 +33,12 @@ Ejemplos:
 # ------------------------------------------------------------------
 # TÍTULO Y DESCRIPCIÓN DE LA APP
 # ------------------------------------------------------------------
-st.title("🤬 El Bot Mala Onda")
-st.caption("Un chatbot con la peor actitud, hecho con Llama 3, Groq y Streamlit.")
+st.title("Chatbot 😊") # Título actualizado
+st.caption("Un chatbot creado con Llama 3, Groq y Streamlit.")
 
 # ------------------------------------------------------------------
 # CONEXIÓN CON LA API DE GROQ
 # ------------------------------------------------------------------
-# Obtiene la clave de API desde los "Secrets" de Streamlit para mantenerla segura.
 try:
     client = Groq(
         api_key=st.secrets["GROQ_API_KEY"],
@@ -52,11 +50,9 @@ except Exception:
 # ------------------------------------------------------------------
 # GESTIÓN DEL HISTORIAL DEL CHAT
 # ------------------------------------------------------------------
-# st.session_state es un diccionario que persiste mientras el usuario interactúa con la app.
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Muestra los mensajes guardados en el historial cada vez que la app se recarga.
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -64,26 +60,20 @@ for message in st.session_state.messages:
 # ------------------------------------------------------------------
 # LÓGICA PRINCIPAL DEL CHAT
 # ------------------------------------------------------------------
-# st.chat_input crea un campo de texto fijo en la parte inferior de la pantalla.
-if prompt := st.chat_input("Escribe una weá aquí..."):
-    # 1. Agrega y muestra el mensaje del usuario.
+if prompt := st.chat_input("Escribe algo aquí..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # 2. Prepara y envía la solicitud a la API de Groq.
     with st.chat_message("assistant"):
-        with st.spinner("Pensando la próxima pesadez..."):
-            # Crea la lista de mensajes para la API, incluyendo el prompt de sistema.
+        with st.spinner("Pensando..."):
             mensajes_para_api = [{"role": "system", "content": prompt_del_sistema}] + st.session_state.messages
 
-            # Llama a la API de Groq.
             chat_completion = client.chat.completions.create(
                 messages=mensajes_para_api,
                 model="llama3-8b-8192",
             )
             
-            # 3. Obtiene, muestra y guarda la respuesta del bot.
             response = chat_completion.choices[0].message.content
             st.markdown(response)
             st.session_state.messages.append({"role": "assistant", "content": response})
