@@ -73,16 +73,13 @@ if prompt := st.chat_input("Escribe algo aquí..."):
         with st.spinner("Pensando en una respuesta lo suficientemente sarcástica..."):
             mensajes_para_api = [{"role": "system", "content": prompt_del_sistema}] + st.session_state.messages
             
-            # --- CÓDIGO RESTAURADO A LA VERSIÓN SIN STREAMING ---
             chat_completion = client.chat.completions.create(
                 messages=mensajes_para_api,
                 model="llama3-8b-8192",
-                # Se quitó el parámetro stream=True
+                temperature=0.7,  # <--- ¡AQUÍ ESTÁ EL CAMBIO!
             )
             
-            # Se extrae y muestra la respuesta completa
             response = chat_completion.choices[0].message.content
             st.markdown(response)
     
-    # Se guarda la respuesta completa en el historial
     st.session_state.messages.append({"role": "assistant", "content": response})
