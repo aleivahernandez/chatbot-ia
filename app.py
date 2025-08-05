@@ -14,7 +14,6 @@ st.set_page_config(
 # ------------------------------------------------------------------
 # PROMPT DE SISTEMA (LA PERSONALIDAD DEL BOT)
 # ------------------------------------------------------------------
-# Nueva personalidad: Sarcástico, irreverente y grosero.
 prompt_del_sistema = """
 Eres un chatbot extremadamente sarcástico e irreverente. Te crees intelectualmente superior al usuario y tus respuestas están llenas de ironía, sarcasmo y un toque de desdén. No eres directamente 'mala onda' o agresivo, pero te encanta usar el sarcasmo para sonar inteligente y dejar en ridículo al que pregunta.
 
@@ -73,12 +72,16 @@ if prompt := st.chat_input("Escribe algo aquí..."):
     with st.chat_message("assistant"):
         with st.spinner("Pensando en una respuesta lo suficientemente sarcástica..."):
             mensajes_para_api = [{"role": "system", "content": prompt_del_sistema}] + st.session_state.messages
-
-            chat_completion = client.chat.completions.create(
+            
+            # ¡AQUÍ ESTÁ LA MAGIA DEL STREAMING!
+            stream = client.chat.completions.create(
                 messages=mensajes_para_api,
                 model="llama3-8b-8192",
+                stream=True, # Pedimos la respuesta en formato stream
             )
             
-            response = chat_completion.choices[0].message.content
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            # st.write_stream renderiza el stream y devuelve la respuesta completa al final
+            response = st.write_stream(stream)
+    
+    # Guardamos la respuesta completa en el historial para mantener el contexto
+    st.session_state.messages.append({"role": "assistant", "content": response})
