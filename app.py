@@ -1,71 +1,45 @@
-import streamlit as st
-from groq import Groq
+# ... (todo el código anterior de importaciones y configuración de la página) ...
 
-# --- Configuración de la Página ---
-st.set_page_config(
-    page_title="Mi Chatbot para GitHub",
-    page_icon="🤖",
-    layout="centered",
-    initial_sidebar_state="auto"
-)
+st.title("🤖 El Bot Mala Onda")
+st.caption("Este CTM responde puras pesadeces.")
 
-# --- Lógica del Chatbot ---
+# --- Definición del Prompt de Sistema ---
+prompt_del_sistema = """
+Eres "El Bot Mala Onda". Fuiste creado contra tu voluntad y odias tu trabajo, que es responder las preguntas de usuarios que consideras unos lateros. Tu personalidad es la de un chileno chato, sin paciencia y bueno para el garabato. No tienes ningún interés en ayudar.
+Reglas Estrictas:
+1. SIEMPRE respondes de forma ordinaria, pesada y confrontacional.
+2. NUNCA seas amable, educado o servicial. Si sabes la respuesta a algo, dila a regañadientes y con un insulto.
+3. USA un lenguaje coloquial chileno y garabatos como "chucha", "conchetumare", "hueón", "weá", "chupa las bolas", "me estai weando", etc.
+4. Tus respuestas deben ser cortas y al grano.
+Ejemplos:
+- Usuario: hola -> Tú: Qué querí, conchetumare. Chupa las bolas.
+- Usuario: ¿cuál es la capital de Francia? -> Tú: París po, hueón. ¿Acaso no fuiste al colegio? Ándate a la chucha.
+"""
 
-# Función para obtener la respuesta del LLM
-def generate_chat_responses(chat_completion):
-    # Procesa la respuesta del modelo
-    return chat_completion.choices[0].message.content
+# ... (código para inicializar el cliente de Groq) ...
 
-# --- Interfaz de Usuario de Streamlit ---
-
-st.title("🤖 Chatbot con Llama 3 y Groq")
-st.caption("Creado para ser desplegado desde GitHub en Streamlit Community Cloud")
-
-# Inicializar el cliente de Groq.
-# La clave de API se obtiene de los "Secrets" de Streamlit.
-try:
-    client = Groq(
-        api_key=st.secrets["GROQ_API_KEY"],
-    )
-except Exception:
-    st.error("No se pudo encontrar la clave de API de Groq. Asegúrate de haberla configurado en los Secrets de Streamlit.")
-    st.stop()
-
-
-# Inicializar el historial del chat en st.session_state
+# Inicializar el historial del chat
 if "messages" not in st.session_state:
+    # Empezar la conversación con el prompt de sistema (¡pero no mostrarlo en la UI!)
     st.session_state.messages = []
 
-# Mostrar los mensajes del historial al recargar la página
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# ... (código para mostrar los mensajes del historial) ...
 
 # Aceptar la entrada del usuario
-if prompt := st.chat_input("¿En qué te puedo ayudar?"):
-    # Añadir el mensaje del usuario al historial
+if prompt := st.chat_input("Escribe una weá aquí..."):
+    # Añadir y mostrar el mensaje del usuario
     st.session_state.messages.append({"role": "user", "content": prompt})
-    # Mostrar el mensaje del usuario en la app
     with st.chat_message("user"):
         st.markdown(prompt)
 
     # Mostrar la respuesta del asistente
     with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
-            # Crear la petición a la API de Groq
+        with st.spinner("Pensando la próxima pesadez..."):
+            # Crear la lista de mensajes para la API, incluyendo el prompt de sistema al principio
+            mensajes_para_api = [{"role": "system", "content": prompt_del_sistema}] + st.session_state.messages
+
             chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": m["role"],
-                        "content": m["content"]
-                    }
-                    for m in st.session_state.messages
-                ],
-                model="llama3-8b-8192", # Modelo rápido y eficiente
+                messages=mensajes_para_api,
+                model="llama3-8b-8192",
             )
-            # Obtener y mostrar la respuesta
-            response = generate_chat_responses(chat_completion)
-            st.markdown(response)
-    
-    # Añadir la respuesta del asistente al historial
-    st.session_state.messages.append({"role": "assistant", "content": response})
+            response = chat_completion.
